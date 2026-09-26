@@ -1,12 +1,17 @@
 name: Build AltStore IPA
 on:
   workflow_dispatch:
+    inputs:
+      capture_preview:
+        description: Build and capture the iOS simulator as well
+        type: boolean
+        default: true
   push:
     branches: [main]
 permissions:
   contents: read
 concurrency:
-  group: ios-${{ github.ref }}
+  group: ios-${{ github.ref }}-${{ github.event_name }}
   cancel-in-progress: true
 jobs:
   build:
@@ -25,6 +30,8 @@ jobs:
         run: npm ci
       - name: Check source
         run: npm run check
+      - name: Check native file safety
+        run: node scripts/test-native-core.mjs
       - name: Generate native project
         run: npx expo prebuild --platform ios --no-install
       - name: Install CocoaPods
@@ -53,6 +60,7 @@ jobs:
           path: build-ios.log
           retention-days: 3
   simulator:
+    if: github.event_name != 'workflow_dispatch' || inputs.capture_preview
     runs-on: macos-26
     timeout-minutes: 60
     env:
