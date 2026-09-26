@@ -1,0 +1,15 @@
+name: Native file safety tests
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  files:
+    runs-on: macos-26
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - run: node scripts/test-native-core.mjs
