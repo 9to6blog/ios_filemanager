@@ -1,6 +1,6 @@
 # Moa Files · 모아 파일
 
-Windows에서 개발하고 AltStore Classic으로 설치하는 한국어 iPhone/iPad 파일 매니저입니다. Expo SDK 57 + React Native + 로컬 Swift Expo Module로 구성됩니다.
+Windows에서 개발하고 AltStore Classic으로 설치하는 한국어 iPhone/iPad 파일 매니저입니다. Expo SDK 57 + React Native + 로컬 Swift Expo Module로 구성되며, 최종 결과물은 홈 화면에서 독립적으로 실행하는 네이티브 iOS 앱 `MoaFiles.ipa`입니다.
 
 ## 기능
 
@@ -13,7 +13,7 @@ Windows에서 개발하고 AltStore Classic으로 설치하는 한국어 iPhone/
 - iOS Quick Look 이미지 확대, 지원되는 영상·오디오 재생, PDF·문서 미리보기
 - 시스템 공유 시트, Apple 파일 앱에 앱 Documents 표시
 - 목적지 충돌 시 덮어쓰기 금지, 가져오기는 중복 이름 자동 변경
-- 파일 제공자와 NSFileCoordinator로 조율하는 백그라운드 파일 작업
+- 별도 작업 스레드에서 파일 제공자와 NSFileCoordinator로 조율하는 파일 작업
 
 ## 설치 (Windows + 무료 Apple 계정)
 
@@ -21,8 +21,8 @@ Windows에서 개발하고 AltStore Classic으로 설치하는 한국어 iPhone/
 2. `MoaFiles-unsigned-*` artifact를 다운로드하고 ZIP을 풉니다.
 3. iPhone에 [AltStore Classic](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows)을 설치합니다. AltStore PAL과 다릅니다.
 4. `MoaFiles.ipa`를 iPhone 파일 앱으로 전송합니다. AltStore의 **My Apps → +**에서 IPA를 선택하거나 파일 공유 메뉴에서 AltStore로 엽니다.
-5. 필요한 경우 설정 → 개인정보 보호 및 보안 → 개발자 모드를 켭니다.
-6. 무료 계정은 7일마다 갱신합니다. 같은 네트워크에서 Windows AltServer를 실행하고 AltStore에서 **Refresh All**을 사용합니다. 기본적으로 AltStore를 포함해 활성 사이드로드 앱 3개 제한이 있습니다.
+5. 설정 → 개인정보 보호 및 보안 → 개발자 모드를 켭니다. 기기가 요청하면 설정 → 일반 → VPN 및 기기 관리에서 개발자 프로필을 신뢰합니다.
+6. 무료 계정은 7일마다 갱신합니다. 같은 네트워크에서 Windows AltServer를 실행하고 AltStore에서 **Refresh All**을 사용합니다. 기본적으로 AltStore를 포함해 활성 사이드로드 앱 3개 제한이 있습니다. [AltStore 공식 안내](https://faq.altstore.io/altstore-classic/your-altstore)
 
 IPA는 **기기용 arm64 Release 앱**이며 JavaScript 번들이 포함됩니다. 설치 후 PC 개발 서버 없이 실행할 수 있습니다. 빌드는 macOS GitHub-hosted runner에서 실행하고, Apple ID·인증서·비밀번호는 저장소/Actions에 넣지 않습니다. 실제 서명은 AltStore에서 합니다. GitHub Actions artifact는 로그인과 다운로드 권한이 필요하며 7일 보관됩니다.
 
@@ -33,10 +33,11 @@ Node.js 24.21.0과 npm을 사용합니다.
 ```powershell
 npm ci
 npm run check
-npm run web
 ```
 
-웹은 **명시적인 메모리 기반 데모**입니다. 파일 가져오기·이름 변경·복사·이동·삭제를 시험할 수 있지만 새로고침 시 초기화됩니다. 기기 파일 관리 코드는 iOS 앱에만 있습니다. Expo Go에는 이 프로젝트의 Swift 모듈이 없으므로 Expo Go로 실제 파일 기능을 실행할 수 없습니다.
+코드를 수정하고 `main`에 push하면 GitHub Actions가 macOS에서 기기용 IPA를 빌드합니다. **Actions → Build AltStore IPA → Run workflow**로 수동 실행할 수도 있습니다. IPA를 내려받아 AltStore에서 다시 설치하면 실제 기기에서 변경 사항을 확인할 수 있습니다. Apple 인증서는 빌드에 필요하지 않습니다.
+
+Expo Go에는 이 프로젝트의 Swift 모듈이 없으므로 실제 파일 기능을 실행할 수 없습니다. 선택적인 `npm run web`은 메모리 기반 개발 데모이며 설치할 앱이 아닙니다. iOS 시스템 UI와 외부 파일 접근은 네이티브 빌드에서 확인합니다.
 
 `src/app`은 Expo Router 화면, `modules/moa-files/ios`는 네이티브 파일 기능입니다. `ios/`는 `expo prebuild`로 생성하며 직접 수정하거나 커밋하지 않습니다.
 
