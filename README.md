@@ -8,6 +8,8 @@ Windows에서 개발하고 AltStore Classic으로 설치하는 한국어 iPhone/
 - 폴더 권한 bookmark 저장·복원, 연결 해제
 - 파일 가져오기, 폴더 생성, 이름 변경, 다중 복사·이동·영구 삭제
 - 현재 폴더 이름 검색, 이미지/영상/문서/오디오 필터, 정렬, 목록·격자
+- iOS 네이티브 탐색 막대·검색창·탭, SF Symbols, 시스템 라이트/다크 모드
+- 이미지·영상·지원 문서의 Quick Look 썸네일
 - iOS Quick Look 이미지 확대, 지원되는 영상·오디오 재생, PDF·문서 미리보기
 - 시스템 공유 시트, Apple 파일 앱에 앱 Documents 표시
 - 목적지 충돌 시 덮어쓰기 금지, 가져오기는 중복 이름 자동 변경
@@ -52,7 +54,7 @@ npm run web
 
 ## 검증
 
-`npm run check`는 타입 검사, Expo ESLint, 파일명·경로 경계·필터/정렬 테스트를 실행합니다. GitHub 빌드는 동일 검사와 Xcode Release 컴파일, arm64/JS 번들/IPA ZIP 검증, SHA-256 생성을 수행합니다. 실제 iCloud/SMB 파일 제공자·AltStore 서명·영상 코덱은 iPhone 검증이 필요합니다. 상세 결과는 `VALIDATION.md`에 기록합니다.
+`npm run check`는 타입 검사, Expo ESLint, 파일명·경로 경계·필터/정렬 테스트를 실행합니다. GitHub 빌드는 동일 검사와 Xcode Release 컴파일, arm64/JS 번들/IPA ZIP 검증, SHA-256 생성을 수행합니다. 별도 simulator 작업은 실제 iOS 앱을 실행해 라이트/다크 스크린샷과 런타임 로그를 저장합니다. 시뮬레이터에만 넣는 테스트 파일은 IPA에 포함되지 않습니다. 실제 iCloud/SMB 파일 제공자·AltStore 서명·영상 코덱은 iPhone 검증이 필요합니다. 상세 결과는 `VALIDATION.md`에 기록합니다.
 
 ## 네이티브 빌드 선택
 

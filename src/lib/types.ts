@@ -13,4 +13,5 @@ export interface FilesAPI {
   importFiles(id: string, path: string): Promise<number>;
   preview(id: string, path: string): Promise<void>;
   share(id: string, path: string): Promise<void>;
+  thumbnail(id: string, path: string): Promise<string | null>;
 }

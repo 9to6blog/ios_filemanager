@@ -42,6 +42,7 @@ async function openBlob(path: string) {
   setTimeout(() => URL.revokeObjectURL(url), 120_000);
 }
 export const files: FilesAPI = {
+  async thumbnail() { return null; },
   async locations() { return [{ id: 'local', name: '내 파일', kind: 'local', available: true }]; },
   async connectFolder() { throw new Error('외부 폴더 연결은 iPhone 앱에서 사용할 수 있습니다. 브라우저에서는 파일 가져오기로 시험해 보세요.'); },
   async disconnect() { throw new Error('내 파일은 연결 해제할 수 없습니다.'); },

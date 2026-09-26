@@ -10,5 +10,5 @@ const unavailable = async (): Promise<never> => {
 export const files: FilesAPI = native ?? {
   locations: unavailable, connectFolder: unavailable, disconnect: unavailable,
   list: unavailable, mkdir: unavailable, rename: unavailable, transfer: unavailable,
-  remove: unavailable, importFiles: unavailable, preview: unavailable, share: unavailable,
+  remove: unavailable, importFiles: unavailable, preview: unavailable, share: unavailable, thumbnail: unavailable,
 };

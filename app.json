@@ -7,13 +7,14 @@
     "scheme": "moafiles",
     "platforms": ["ios", "web"],
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.ninetosix.moafiles",
       "buildNumber": "1",
       "infoPlist": {
         "CFBundleDisplayName": "모아 파일",
+        "CFBundleLocalizations": ["ko", "en"],
         "UIFileSharingEnabled": true,
         "LSSupportsOpeningDocumentsInPlace": true,
         "ITSAppUsesNonExemptEncryption": false,
@@ -35,7 +36,7 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      ["expo-splash-screen", { "backgroundColor": "#F7F8F4", "image": "./assets/icon.png", "imageWidth": 120 }]
+      ["expo-splash-screen", { "backgroundColor": "#FFFFFF", "dark": { "backgroundColor": "#000000" }, "image": "./assets/icon.png", "imageWidth": 100 }]
     ]
   }
 }

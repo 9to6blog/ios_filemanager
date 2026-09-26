@@ -7,7 +7,7 @@ permissions:
   contents: read
 concurrency:
   group: ios-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: macos-26
@@ -52,3 +52,33 @@ jobs:
           name: ios-build-log-${{ github.run_number }}
           path: build-ios.log
           retention-days: 3
+  simulator:
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci
+      - run: npx expo prebuild --platform ios --no-install
+      - run: pod install
+        working-directory: ios
+      - name: Build simulator app
+        run: |
+          set -euo pipefail
+          xcodebuild -workspace ios/MoaFiles.xcworkspace -scheme MoaFiles -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > build-simulator.log 2>&1 || { tail -n 100 build-simulator.log; exit 1; }
+      - name: Launch native app and capture light and dark screens
+        run: bash scripts/simulator-preview.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-ios-preview-${{ github.run_number }}
+          path: |
+            build/preview/
+            build-simulator.log
+          retention-days: 7

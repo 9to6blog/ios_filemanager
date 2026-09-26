@@ -2,6 +2,8 @@ import ExpoModulesCore
 import UIKit
 import UniformTypeIdentifiers
 import QuickLook
+import QuickLookThumbnailing
+import CryptoKit
 
 private func failure(_ message: String) -> NSError {
   NSError(domain: "MoaFiles", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
@@ -18,6 +20,39 @@ public final class MoaFilesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("MoaFiles")
+
+    AsyncFunction("thumbnail") { (id: String, path: String, promise: Promise) in
+      do {
+        let (root, access) = try self.openRoot(id)
+        do {
+          let url = try self.child(root, path)
+          let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey, .isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey])
+          if values.isUbiquitousItem == true && values.ubiquitousItemDownloadingStatus != .current {
+            if access { root.stopAccessingSecurityScopedResource() }
+            promise.resolve(); return
+          }
+          let token = "\(id)/\(path)/\(values.contentModificationDate?.timeIntervalSince1970 ?? 0)/\(values.fileSize ?? 0)"
+          let digest = SHA256.hash(data: Data(token.utf8)).map { String(format: "%02x", $0) }.joined()
+          let cache = self.fm.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("MoaThumbnails", isDirectory: true)
+          try self.fm.createDirectory(at: cache, withIntermediateDirectories: true)
+          let output = cache.appendingPathComponent(digest + ".jpg")
+          if self.fm.fileExists(atPath: output.path) {
+            if access { root.stopAccessingSecurityScopedResource() }
+            promise.resolve(output.absoluteString); return
+          }
+          let request = QLThumbnailGenerator.Request(fileAt: url, size: CGSize(width: 160, height: 160), scale: 2, representationTypes: .thumbnail)
+          QLThumbnailGenerator.shared.generateBestRepresentation(for: request) { representation, _ in
+            defer { if access { root.stopAccessingSecurityScopedResource() } }
+            guard let data = representation?.uiImage.jpegData(compressionQuality: 0.8) else { promise.resolve(); return }
+            do { try data.write(to: output, options: .atomic); promise.resolve(output.absoluteString) }
+            catch { promise.resolve() }
+          }
+        } catch {
+          if access { root.stopAccessingSecurityScopedResource() }
+          throw error
+        }
+      } catch { promise.resolve() }
+    }.runOnQueue(io)
 
     AsyncFunction("locations") { () -> [[String: Any]] in
       var result: [[String: Any]] = [["id": "local", "name": "내 파일", "kind": "local", "available": true]]
