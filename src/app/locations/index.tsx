@@ -28,9 +28,12 @@ export default function LocationsScreen() {
     catch (e) { setError(e instanceof Error ? e.message : String(e)); }
     finally { setBusy(false); }
   }
-  return <View style={[styles.screen, { backgroundColor: colors.grouped }]}><Stack.Screen options={{ title: '저장소', headerLargeTitleEnabled: true }} /><ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.page, { flex: undefined, paddingBottom: 30, paddingTop: 16 }]}>
+  return <View style={[styles.screen, { backgroundColor: colors.grouped }]}><Stack.Screen options={{ title: '연결한 폴더', headerLargeTitleEnabled: true }} />
+    <Stack.Toolbar placement="left"><Stack.Toolbar.Button onPress={() => router.back()}>뒤로</Stack.Toolbar.Button></Stack.Toolbar>
+    <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={[styles.page, { flex: undefined, paddingBottom: 30, paddingTop: 16 }]}>
     {error !== '' && <Notice message={error} error onClose={() => setError('')} />}
-    <Text style={{ color: colors.muted, fontSize: 13, marginBottom: 8, paddingLeft: 16 }}>위치</Text>
+    <Text style={[styles.body, { paddingHorizontal: 16, marginBottom: 20 }]}>전체 파일 화면에서는 공개된 저장소를 바로 탐색합니다. 여기에 폴더를 연결하면 복사·이동 등 추가 관리 도구를 사용할 수 있습니다.</Text>
+    <Text style={{ color: colors.muted, fontSize: 13, marginBottom: 8, paddingLeft: 16 }}>관리할 폴더</Text>
     <View style={{ borderRadius: 10, overflow: 'hidden' }}>{locations.map(item => <View key={item.id} style={[styles.card, { padding: 0, borderRadius: 0 }]}>
       <Pressable accessibilityRole="button" onPress={() => router.navigate({ pathname: '/', params: { location: item.id, path: '' } })} style={[styles.row, { padding: 20 }]}>
         <Icon name={item.kind === 'local' ? 'smartphone' : 'cloud'} color={colors.accent} size={25} />

@@ -11,4 +11,4 @@ cd build
 zip -qry MoaFiles.ipa Payload
 shasum -a 256 MoaFiles.ipa > MoaFiles.sha256
 unzip -tq MoaFiles.ipa
-node -e 'const fs=require("fs"); fs.writeFileSync("manifest.json",JSON.stringify({app:"Moa Files",version:"0.1.0",commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,platform:"iphoneos-arm64",signed:false,installation:"AltStore Classic",jsBundleIncluded:true},null,2)+"\n")'
+node -e 'const fs=require("fs"); fs.writeFileSync("manifest.json",JSON.stringify({app:"Moa Files",version:require("../package.json").version,commit:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,platform:"iphoneos-arm64",signed:false,installation:"AltStore Classic",jsBundleIncluded:true},null,2)+"\n")'

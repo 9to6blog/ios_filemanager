@@ -79,9 +79,22 @@ jobs:
       - name: Build simulator app
         run: |
           set -euo pipefail
-          xcodebuild -workspace ios/MoaFiles.xcworkspace -scheme MoaFiles -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > build-simulator.log 2>&1 || { tail -n 100 build-simulator.log; exit 1; }
+          xcodebuild -workspace ios/MoaFiles.xcworkspace -scheme MoaFiles -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build > build-simulator.log 2>&1 || { tail -n 100 build-simulator.log; exit 1; }
       - name: Launch native app and capture light and dark screens
         run: bash scripts/simulator-preview.sh
+      - name: Verify public browser, selection controls and app lock
+        run: |
+          set -euo pipefail
+          ruby scripts/setup-uitests.rb
+          udid=$(node -p 'require("./build/preview/simulator.json").udid')
+          xcrun simctl ui "$udid" appearance light
+          xcodebuild -workspace ios/MoaFiles.xcworkspace -scheme MoaFilesUITests -configuration Release -destination "platform=iOS Simulator,id=$udid" -derivedDataPath build/simulator -resultBundlePath build/preview/UITests.xcresult -parallel-testing-enabled NO ARCHS="$(uname -m)" ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO test > build/preview/ui-tests.log 2>&1 || { tail -n 120 build/preview/ui-tests.log; exit 1; }
+      - name: Export UI test screenshots
+        if: always()
+        run: |
+          if [ -d build/preview/UITests.xcresult ]; then
+            xcrun xcresulttool export attachments --path build/preview/UITests.xcresult --output-path build/preview/test-screenshots
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'MoaFileAccess'
-  s.version = '0.1.0'
+  s.version = '0.2.0'
   s.summary = 'User-authorized document management for Moa Files'
   s.description = s.summary
   s.author = 'Moa Files'
@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.source = { :git => 'https://github.com/9to6blog/ios_filemanager.git' }
   s.static_framework = true
   s.dependency 'ExpoModulesCore'
-  s.frameworks = 'UIKit', 'QuickLook', 'QuickLookThumbnailing', 'CryptoKit', 'UniformTypeIdentifiers'
+  s.frameworks = 'UIKit', 'QuickLook', 'QuickLookThumbnailing', 'CryptoKit', 'UniformTypeIdentifiers', 'LocalAuthentication'
   s.source_files = '**/*.{h,m,mm,swift}'
   s.swift_version = '5.9'
 end

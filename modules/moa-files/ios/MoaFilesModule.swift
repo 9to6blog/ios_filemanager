@@ -21,6 +21,14 @@ public final class MoaFilesModule: Module {
   public func definition() -> ModuleDefinition {
     Name("MoaFiles")
 
+    AsyncFunction("showSystemBrowser") { () in
+      try MoaBrowserHost.shared.show()
+    }.runOnQueue(.main)
+
+    AsyncFunction("configureAppLock") { () in
+      MoaBrowserHost.shared.configureLock()
+    }.runOnQueue(.main)
+
     AsyncFunction("thumbnail") { (id: String, path: String, promise: Promise) in
       do {
         let (root, access) = try self.openRoot(id)
@@ -55,7 +63,7 @@ public final class MoaFilesModule: Module {
     }.runOnQueue(io)
 
     AsyncFunction("locations") { () -> [[String: Any]] in
-      var result: [[String: Any]] = [["id": "local", "name": "내 파일", "kind": "local", "available": true]]
+      var result: [[String: Any]] = [["id": "local", "name": "앱 저장소", "kind": "local", "available": true]]
       for (id, data) in self.bookmarks().sorted(by: { $0.key < $1.key }) {
         do {
           var stale = false
@@ -412,12 +420,36 @@ private final class PickerSession: NSObject, UIDocumentPickerDelegate {
   private func finish(_ urls: [URL]?) { let callback = completion; completion = nil; callback?(urls) }
 }
 
-private final class PreviewSession: NSObject, QLPreviewControllerDataSource, QLPreviewControllerDelegate {
-  private let url: URL
+final class PreviewSession: NSObject, QLPreviewControllerDataSource, QLPreviewControllerDelegate, NSFilePresenter {
+  private var url: URL
+  private weak var preview: QLPreviewController?
+  var presentedItemURL: URL? { url }
+  var presentedItemOperationQueue: OperationQueue { .main }
   private var onClose: (() -> Void)?
-  init(url: URL, onClose: @escaping () -> Void) { self.url = url; self.onClose = onClose }
+  init(url: URL, onClose: @escaping () -> Void) {
+    self.url = url
+    self.onClose = onClose
+    super.init()
+    NSFileCoordinator.addFilePresenter(self)
+  }
   func numberOfPreviewItems(in controller: QLPreviewController) -> Int { 1 }
-  func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem { url as NSURL }
-  func previewControllerDidDismiss(_ controller: QLPreviewController) { let callback = onClose; onClose = nil; callback?() }
-  deinit { onClose?() }
+  func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+    preview = controller
+    return url as NSURL
+  }
+  func presentedItemDidMove(to newURL: URL) { url = newURL; preview?.reloadData() }
+  func presentedItemDidChange() { preview?.reloadData() }
+  func accommodatePresentedItemDeletion(completionHandler: @escaping (Error?) -> Void) {
+    if let preview = preview { preview.dismiss(animated: true) { self.finish() } }
+    else { finish() }
+    completionHandler(nil)
+  }
+  func previewControllerDidDismiss(_ controller: QLPreviewController) { finish() }
+  private func finish() {
+    NSFileCoordinator.removeFilePresenter(self)
+    let callback = onClose
+    onClose = nil
+    callback?()
+  }
+  deinit { NSFileCoordinator.removeFilePresenter(self); onClose?() }
 }

@@ -42,8 +42,10 @@ async function openBlob(path: string) {
   setTimeout(() => URL.revokeObjectURL(url), 120_000);
 }
 export const files: FilesAPI = {
+  async showSystemBrowser() { throw new Error('전체 파일 탐색은 iPhone 앱에서 사용할 수 있습니다.'); },
+  async configureAppLock() { throw new Error('Face ID 앱 잠금은 iPhone 앱에서 사용할 수 있습니다.'); },
   async thumbnail() { return null; },
-  async locations() { return [{ id: 'local', name: '내 파일', kind: 'local', available: true }]; },
+  async locations() { return [{ id: 'local', name: '앱 저장소', kind: 'local', available: true }]; },
   async connectFolder() { throw new Error('외부 폴더 연결은 iPhone 앱에서 사용할 수 있습니다. 브라우저에서는 파일 가져오기로 시험해 보세요.'); },
   async disconnect() { throw new Error('내 파일은 연결 해제할 수 없습니다.'); },
   async list(_id, path) { return [...items.values()].filter(item => parentPath(item.path) === path); },

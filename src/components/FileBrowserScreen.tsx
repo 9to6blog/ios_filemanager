@@ -43,7 +43,7 @@ export default function BrowserScreen() {
   const { width } = useWindowDimensions();
   const columns = width > 850 ? 4 : width > 580 ? 3 : 2;
   const currentLocation = locations.find(item => item.id === location);
-  const currentName = path ? path.split('/').pop() : currentLocation?.name ?? '내 파일';
+  const currentName = path ? path.split('/').pop() : currentLocation?.name ?? '앱 저장소';
   const visible = useMemo(() => visibleEntries(entries, query, category, sort), [entries, query, category, sort]);
   const currentFiles = entries.filter(entry => !entry.isDirectory);
   const bytes = currentFiles.reduce((sum, entry) => sum + entry.size, 0);
@@ -124,8 +124,8 @@ export default function BrowserScreen() {
     if (busy) return;
     if (Platform.OS !== 'ios') { startEditor('folder'); return; }
     ActionSheetIOS.showActionSheetWithOptions({
-      options: ['파일 가져오기', '새로운 폴더', grid ? '목록으로 보기' : '아이콘으로 보기', '이름순 정렬', '최근 수정순 정렬', '크기순 정렬', '파일 종류 필터', '저장소 변경', '취소'],
-      cancelButtonIndex: 8,
+      options: ['파일 가져오기', '새로운 폴더', grid ? '목록으로 보기' : '아이콘으로 보기', '이름순 정렬', '최근 수정순 정렬', '크기순 정렬', '파일 종류 필터', '연결한 폴더', '설정', '취소'],
+      cancelButtonIndex: 9,
     }, index => {
       if (index === 0) void run('가져오는 중', async () => { const count = await files.importFiles(location, path); return count ? `${count}개 파일을 가져왔습니다.` : undefined; });
       if (index === 1) startEditor('folder');
@@ -135,6 +135,7 @@ export default function BrowserScreen() {
       if (index === 5) setSort('size');
       if (index === 6) showFilter();
       if (index === 7) router.navigate('/locations');
+      if (index === 8) router.navigate('/guide');
     });
   }
   const renderEntry = ({ item }: { item: Entry }) => {
@@ -167,6 +168,9 @@ export default function BrowserScreen() {
       headerBackVisible: !busy,
       headerSearchBarOptions: { placeholder: '검색', hideWhenScrolling: false, obscureBackground: false, cancelButtonText: '취소', onChangeText: event => setQuery(event.nativeEvent.text), onCancelButtonPress: () => setQuery('') },
     }} />
+    {!path && Platform.OS === 'ios' && <Stack.Toolbar placement="left">
+      <Stack.Toolbar.Button disabled={!!busy} onPress={() => void run('전체 파일 여는 중', () => files.showSystemBrowser())}>전체 파일</Stack.Toolbar.Button>
+    </Stack.Toolbar>}
     <Stack.Toolbar placement="right">
       <Stack.Toolbar.Button disabled={!!busy} onPress={() => { setSelecting(!selecting); setSelected([]); }}>{selecting ? '완료' : '선택'}</Stack.Toolbar.Button>
       {!selecting && <Stack.Toolbar.Button icon="ellipsis.circle" accessibilityLabel="더 보기" disabled={!!busy} onPress={showMenu} />}

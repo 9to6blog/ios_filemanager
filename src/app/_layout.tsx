@@ -1,17 +1,23 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { useEffect, useState } from 'react';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { ActivityIndicator, Platform, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { colors } from '../components/ui';
+import { colors, styles } from '../components/ui';
+import { files } from '../lib/files';
 
 export default function Layout() {
   const dark = useColorScheme() === 'dark';
+  const [ready, setReady] = useState(Platform.OS !== 'ios');
+  const [error, setError] = useState('');
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    // Don't mount any file list before the native privacy gate is installed.
+    void files.showSystemBrowser().then(() => setReady(true)).catch(e => setError(String(e)));
+  }, []);
   return <SafeAreaProvider><ThemeProvider value={dark ? DarkTheme : DefaultTheme}><StatusBar style="auto" />
-    <NativeTabs tintColor={colors.accent}>
-      <NativeTabs.Trigger name="(browse)"><NativeTabs.Trigger.Label>둘러보기</NativeTabs.Trigger.Label><NativeTabs.Trigger.Icon sf={{ default: 'folder', selected: 'folder.fill' }} /></NativeTabs.Trigger>
-      <NativeTabs.Trigger name="locations"><NativeTabs.Trigger.Label>저장소</NativeTabs.Trigger.Label><NativeTabs.Trigger.Icon sf={{ default: 'externaldrive', selected: 'externaldrive.fill' }} /></NativeTabs.Trigger>
-      <NativeTabs.Trigger name="guide"><NativeTabs.Trigger.Label>설정</NativeTabs.Trigger.Label><NativeTabs.Trigger.Icon sf="gearshape" /></NativeTabs.Trigger>
-    </NativeTabs>
+    {ready ? <Stack screenOptions={{ headerShown: false }} /> : <View style={[styles.screen, { justifyContent: 'center', alignItems: 'center', padding: 24, gap: 16 }]}>
+      {error ? <Text style={{ color: colors.ink }}>{error}</Text> : <ActivityIndicator color={colors.accent} />}
+    </View>}
   </ThemeProvider></SafeAreaProvider>;
 }
