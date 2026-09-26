@@ -327,11 +327,16 @@ public final class MoaFilesModule: Module {
   private func child(_ root: URL, _ path: String) throws -> URL {
     if path.isEmpty { return root }
     let parts = path.split(separator: "/", omittingEmptySubsequences: false)
-    for part in parts { _ = try validName(String(part)) }
-    let candidate = root.appendingPathComponent(path).standardizedFileURL
     let resolvedRoot = root.resolvingSymlinksInPath().standardizedFileURL.path
-    let resolvedPath = candidate.resolvingSymlinksInPath().standardizedFileURL.path
-    guard resolvedPath.hasPrefix(resolvedRoot + "/") else { throw failure("선택한 폴더 밖에는 접근할 수 없습니다.") }
+    var candidate = root
+    // Resolve each ancestor before appending a potentially nonexistent leaf.
+    // Resolving the full path alone can leave an ancestor symlink unresolved.
+    for part in parts {
+      _ = try validName(String(part))
+      candidate = candidate.appendingPathComponent(String(part)).standardizedFileURL
+      let resolvedPath = candidate.resolvingSymlinksInPath().standardizedFileURL.path
+      guard resolvedPath.hasPrefix(resolvedRoot + "/") else { throw failure("선택한 폴더 밖에는 접근할 수 없습니다.") }
+    }
     return candidate
   }
 

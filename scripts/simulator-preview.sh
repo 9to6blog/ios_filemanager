@@ -24,4 +24,4 @@ xcrun simctl io "$udid" screenshot build/preview/app-dark.png
 xcrun simctl spawn "$udid" log show --last 2m --style compact --predicate 'process == "MoaFiles"' > build/preview/app-runtime.log
 # A crash is a failed smoke check, not a usable preview.
 xcrun simctl spawn "$udid" launchctl list | grep 'app.ninetosix.moafiles' > build/preview/process.txt
-test -s build/preview/process.txt
+awk '$1 ~ /^[0-9]+$/ { running=1 } END { exit !running }' build/preview/process.txt
