@@ -16,7 +16,7 @@ cp assets/icon.png "$container/Documents/테스트 이미지.png"
 printf 'iOS 시뮬레이터 테스트 파일입니다.\n' > "$container/Documents/테스트 문서.txt"
 xcrun simctl ui "$udid" appearance light
 xcrun simctl launch "$udid" app.ninetosix.moafiles -AppleLanguages '(ko)' -AppleLocale ko_KR
-sleep 6
+sleep 10
 xcrun simctl io "$udid" screenshot build/preview/app-light.png
 xcrun simctl ui "$udid" appearance dark
 sleep 2
