@@ -39,9 +39,6 @@ export function Button({ label, onPress, icon, secondary = false, danger = false
 export function IconButton({ icon, label, onPress, active = false }: { icon: IconName; label: string; onPress: () => void; active?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={[styles.iconButton, active && { backgroundColor: colors.pale }]}><Icon name={icon} color={colors.accent} /></Pressable>;
 }
-export function ToolbarButton({ icon, label, disabled, onPress }: { icon: IconName; label: string; disabled: boolean; onPress: () => void }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={{ alignItems: 'center', gap: 5, padding: 8, opacity: disabled ? 0.3 : 1 }}><Icon name={icon} color={colors.accent} size={22} /><Text style={{ fontSize: 11, color: colors.accent }}>{label}</Text></Pressable>;
-}
 export function Sheet({ visible, title, onClose, children }: { visible: boolean; title: string; onClose: () => void; children: ReactNode }) {
   if (Platform.OS === 'ios') return <Modal visible={visible} presentationStyle="pageSheet" animationType="slide" onRequestClose={onClose}>
     <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: colors.grouped }}>

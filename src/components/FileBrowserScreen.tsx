@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { ActionSheetIOS, ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { Button, colors, Icon, IconButton, Notice, Sheet, styles, ToolbarButton, type IconName } from '../components/ui';
+import { Button, colors, Icon, Notice, Sheet, styles, type IconName } from '../components/ui';
 import { TransferSheet } from '../components/TransferSheet';
 import { FileThumbnail } from './FileThumbnail';
 import { categoryOf, formatSize, validateName, visibleEntries, type Category } from '../lib/file-utils';
@@ -59,7 +59,7 @@ export default function BrowserScreen() {
     } finally { if (generation === loadGeneration.current) setLoading(false); }
   }, [location, path]);
   useFocusEffect(useCallback(() => {
-    setSelected([]); setSelecting(false); setQuery(''); setCategory('all'); setNotice(null);
+    setSelected([]); setSelecting(false); setNotice(null);
     void load();
     return () => { loadGeneration.current++; };
   }, [load]));
@@ -166,11 +166,11 @@ export default function BrowserScreen() {
       gestureEnabled: !busy,
       headerBackVisible: !busy,
       headerSearchBarOptions: { placeholder: '검색', hideWhenScrolling: false, obscureBackground: false, cancelButtonText: '취소', onChangeText: event => setQuery(event.nativeEvent.text), onCancelButtonPress: () => setQuery('') },
-      headerRight: () => <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Pressable accessibilityRole="button" onPress={() => { if (!busy) { setSelecting(!selecting); setSelected([]); } }} style={{ padding: 8 }}><Text style={{ color: colors.accent, fontSize: 17 }}>{selecting ? '완료' : '선택'}</Text></Pressable>
-        {!selecting && <IconButton icon="more-horizontal" label="더 보기" onPress={showMenu} />}
-      </View>,
     }} />
+    <Stack.Toolbar placement="right">
+      <Stack.Toolbar.Button disabled={!!busy} onPress={() => { setSelecting(!selecting); setSelected([]); }}>{selecting ? '완료' : '선택'}</Stack.Toolbar.Button>
+      {!selecting && <Stack.Toolbar.Button icon="ellipsis.circle" accessibilityLabel="더 보기" disabled={!!busy} onPress={showMenu} />}
+    </Stack.Toolbar>
     <FlatList data={visible} key={grid ? `grid-${columns}` : 'list'} numColumns={grid ? columns : 1}
       contentInsetAdjustmentBehavior="automatic" keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled"
       keyExtractor={item => item.path} renderItem={renderEntry} columnWrapperStyle={grid ? { paddingHorizontal: 12, gap: 8 } : undefined}
@@ -180,13 +180,17 @@ export default function BrowserScreen() {
       contentContainerStyle={{ paddingBottom: 24, flexGrow: 1 }}
       ListFooterComponent={visible.length > 0 ? <Text style={local.footer}>{visible.length}개 항목 · {formatSize(bytes)}</Text> : null}
       ListEmptyComponent={<View style={local.empty}><Icon name={query ? 'search' : 'folder'} size={58} color={colors.muted} /><Text style={local.emptyTitle}>{loading ? '불러오는 중' : query || category !== 'all' ? '검색 결과 없음' : '파일 없음'}</Text><Text style={[styles.body, { textAlign: 'center' }]}>{query || category !== 'all' ? '다른 검색어나 파일 종류를 선택하세요.' : '상단의 더 보기 버튼에서 파일을 가져오거나\n새로운 폴더를 만드세요.'}</Text></View>} />
-    {selecting && <View style={local.toolbar}>
-      <ToolbarButton icon="share" label="공유" disabled={selected.length !== 1} onPress={() => void run('공유 중', () => files.share(location, selected[0]))} />
-      <ToolbarButton icon="copy" label="복사" disabled={!selected.length} onPress={() => setTransfer('copy')} />
-      <ToolbarButton icon="corner-up-right" label="이동" disabled={!selected.length} onPress={() => setTransfer('move')} />
-      <ToolbarButton icon="edit-2" label="이름" disabled={selected.length !== 1} onPress={() => startEditor('rename')} />
-      <ToolbarButton icon="trash-2" label="삭제" disabled={!selected.length} onPress={() => setConfirmDelete(true)} />
-    </View>}
+    {selecting && <Stack.Toolbar placement="bottom">
+      <Stack.Toolbar.Button icon="square.and.arrow.up" accessibilityLabel="공유" disabled={selected.length !== 1 || !!busy} onPress={() => void run('공유 중', () => files.share(location, selected[0]))} />
+      <Stack.Toolbar.Spacer />
+      <Stack.Toolbar.Button icon="doc.on.doc" accessibilityLabel="복사" disabled={!selected.length || !!busy} onPress={() => setTransfer('copy')} />
+      <Stack.Toolbar.Spacer />
+      <Stack.Toolbar.Button icon="folder" accessibilityLabel="이동" disabled={!selected.length || !!busy} onPress={() => setTransfer('move')} />
+      <Stack.Toolbar.Spacer />
+      <Stack.Toolbar.Button icon="pencil" accessibilityLabel="이름 변경" disabled={selected.length !== 1 || !!busy} onPress={() => startEditor('rename')} />
+      <Stack.Toolbar.Spacer />
+      <Stack.Toolbar.Button icon="trash" accessibilityLabel="삭제" disabled={!selected.length || !!busy} onPress={() => setConfirmDelete(true)} />
+    </Stack.Toolbar>}
     <Sheet visible={editor !== null} title={editor === 'folder' ? '새로운 폴더' : '이름 변경'} onClose={() => setEditor(null)}>
       <TextInput accessibilityLabel="이름" autoFocus placeholder="이름" placeholderTextColor={colors.muted} value={name} onChangeText={setName} style={styles.input} onSubmitEditing={() => void submitEditor()} returnKeyType="done" selectTextOnFocus />
       {editorError !== '' && <Notice message={editorError} error />}<Button label={editor === 'folder' ? '생성' : '완료'} onPress={() => void submitEditor()} />
@@ -217,7 +221,6 @@ const local = StyleSheet.create({
   selectionHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 20 },
   checkbox: { width: 23, height: 23, borderRadius: 12, borderColor: colors.border, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checked: { backgroundColor: colors.accent, borderColor: colors.accent }, gridCheck: { position: 'absolute', top: 12, right: 8 },
-  toolbar: { paddingHorizontal: 12, paddingVertical: 5, borderTopWidth: StyleSheet.hairlineWidth, borderColor: colors.border, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.background },
   footer: { textAlign: 'center', fontSize: 13, color: colors.muted, padding: 24 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: 320, padding: 24, gap: 14 },
   emptyTitle: { color: colors.ink, fontSize: 22, fontWeight: '600' },
