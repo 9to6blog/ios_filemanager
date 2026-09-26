@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "MoaFiles",
+    "slug": "moa-files",
+    "version": "0.1.0",
+    "orientation": "default",
+    "scheme": "moafiles",
+    "platforms": ["ios", "web"],
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.ninetosix.moafiles",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleDisplayName": "모아 파일",
+        "UIFileSharingEnabled": true,
+        "LSSupportsOpeningDocumentsInPlace": true,
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocalNetworkUsageDescription": "연결한 네트워크 저장소의 파일을 관리하기 위해 로컬 네트워크에 접근합니다."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      ["expo-splash-screen", { "backgroundColor": "#F7F8F4", "image": "./assets/icon.png", "imageWidth": 120 }]
+    ]
+  }
+}

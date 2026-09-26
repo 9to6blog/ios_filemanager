@@ -1,0 +1,54 @@
+name: Build AltStore IPA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check source
+        run: npm run check
+      - name: Generate native project
+        run: npx expo prebuild --platform ios --no-install
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+      - name: Build unsigned iPhone app
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -workspace ios/MoaFiles.xcworkspace -scheme MoaFiles -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build/derived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY='' build > build-ios.log 2>&1 || { tail -n 100 build-ios.log; exit 1; }
+      - name: Package and verify IPA
+        run: bash scripts/package-ipa.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MoaFiles-unsigned-${{ github.run_number }}
+          path: |
+            build/MoaFiles.ipa
+            build/MoaFiles.sha256
+            build/manifest.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ios-build-log-${{ github.run_number }}
+          path: build-ios.log
+          retention-days: 3

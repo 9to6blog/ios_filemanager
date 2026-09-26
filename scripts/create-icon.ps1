@@ -1,0 +1,25 @@
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Drawing
+$iconPath = Join-Path $PSScriptRoot '..\assets\icon.png'
+$bitmap = [System.Drawing.Bitmap]::new(1024, 1024)
+$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+$graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+$graphics.Clear([System.Drawing.ColorTranslator]::FromHtml('#E8F0D9'))
+$backBrush = [System.Drawing.SolidBrush]::new([System.Drawing.ColorTranslator]::FromHtml('#7FA58A'))
+$frontBrush = [System.Drawing.SolidBrush]::new([System.Drawing.ColorTranslator]::FromHtml('#206E57'))
+$lightBrush = [System.Drawing.SolidBrush]::new([System.Drawing.ColorTranslator]::FromHtml('#F7F8F4'))
+$back = [System.Drawing.Drawing2D.GraphicsPath]::new()
+$back.AddPolygon([System.Drawing.Point[]]@([System.Drawing.Point]::new(190,300), [System.Drawing.Point]::new(420,300), [System.Drawing.Point]::new(490,365), [System.Drawing.Point]::new(820,365), [System.Drawing.Point]::new(820,705), [System.Drawing.Point]::new(190,705)))
+$graphics.FillPath($backBrush, $back)
+$front = [System.Drawing.Drawing2D.GraphicsPath]::new()
+$front.AddArc(190,425,70,70,180,90)
+$front.AddArc(764,425,70,70,270,90)
+$front.AddArc(764,690,70,70,0,90)
+$front.AddArc(190,690,70,70,90,90)
+$front.CloseFigure()
+$graphics.FillPath($frontBrush, $front)
+$graphics.FillEllipse($lightBrush, 432,535,52,52)
+$graphics.FillEllipse($lightBrush, 514,535,52,52)
+$graphics.FillEllipse($lightBrush, 596,535,52,52)
+$bitmap.Save($iconPath, [System.Drawing.Imaging.ImageFormat]::Png)
+$front.Dispose(); $back.Dispose(); $lightBrush.Dispose(); $frontBrush.Dispose(); $backBrush.Dispose(); $graphics.Dispose(); $bitmap.Dispose()
